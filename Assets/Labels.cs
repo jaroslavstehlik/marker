@@ -23,6 +23,7 @@ public class Labels
 
     public Action<string> workingImagePathChanged;
     public Action<List<string>> onImagesChanged;
+    public float imagePreviewMagnification = 1f;
 
     public Dictionary<string, RectangleLabel> rectangleLabels { get => _rectangleLabels; }
     public string directoryPath { get => _directoryPath; set => _directoryPath = value; }

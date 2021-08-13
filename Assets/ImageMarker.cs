@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -6,8 +7,8 @@ using UnityEngine.UI;
 
 public class ImageMarker : MonoBehaviour
 {
+    [SerializeField] private RectTransform _rawImageRectTransform = default;
     [SerializeField] RawImage _rawImage = default;
-    [SerializeField] AspectRatioFitter _aspectRatioFitter = default;
     private Texture2D _texture2D = default;
     byte[] _whiteTexture;
 
@@ -18,20 +19,25 @@ public class ImageMarker : MonoBehaviour
         _rawImage.texture = _texture2D;
     }
 
+    private void Update()
+    {
+        UpdateSize();
+    }
+
     void OnEnable()
     {
         LabelSerializer.instance.labels.workingImagePathChanged += WorkingImagePathChanged;
         WorkingImagePathChanged(LabelSerializer.instance.labels.workingImagePath);
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         LabelSerializer.instance.labels.workingImagePathChanged -= WorkingImagePathChanged;
     }
 
     void WorkingImagePathChanged(string imagePath)
     {
-        if(!File.Exists(imagePath))
+        if (!File.Exists(imagePath))
         {
             _texture2D.LoadImage(_whiteTexture);
             return;
@@ -39,13 +45,17 @@ public class ImageMarker : MonoBehaviour
 
         byte[] bytes = File.ReadAllBytes(imagePath);
         _texture2D.LoadImage(bytes);
-        if (_texture2D.height == 0)
+    }
+
+    void UpdateSize()
+    {
+        float aspectRatio = 1f;
+        if (_texture2D.height > 0 && _texture2D.width > 0)
         {
-            _aspectRatioFitter.aspectRatio = 1f;
+            aspectRatio = (float) _texture2D.width / (float) _texture2D.height;
         }
-        else
-        {
-            _aspectRatioFitter.aspectRatio = (float)_texture2D.width / (float)_texture2D.height;
-        }
+
+        float height = _texture2D.height * LabelSerializer.instance.labels.imagePreviewMagnification;
+        _rawImageRectTransform.sizeDelta = new Vector2(height * aspectRatio, height);
     }
 }
