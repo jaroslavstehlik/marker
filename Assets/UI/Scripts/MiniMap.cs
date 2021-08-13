@@ -68,7 +68,6 @@ public class MiniMap : MonoBehaviour
     void UpdateMagnificationText()
     {
         float magnification = LabelSerializer.instance.labels.imagePreviewMagnification;
-        Debug.Log(magnification);
         _magnificationText.text = magnification.ToString("P", CultureInfo.InvariantCulture);
     }
 }

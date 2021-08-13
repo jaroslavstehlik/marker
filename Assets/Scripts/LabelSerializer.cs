@@ -77,6 +77,11 @@ public class LabelSerializer
 
     public bool Load(string path)
     {
+        if (string.IsNullOrEmpty(path))
+        {
+            Debug.LogError($"LabelSerializer load failed, path is null or empty!");
+            return false;
+        }
         string directoryPath = Path.GetDirectoryName(path);
         if (!Directory.Exists(directoryPath))
         {
@@ -102,16 +107,21 @@ public class LabelSerializer
 
     public bool Save(string path)
     {
+        if (string.IsNullOrEmpty(path))
+        {
+            Debug.LogError($"LabelSerializer save failed, path is null or empty!");
+            return false;
+        }
         string directoryPath = Path.GetDirectoryName(path);
         if (!Directory.Exists(directoryPath))
         {
-            Debug.LogError($"LabelSerializer Save failed, Directory does not exist! {directoryPath}");
+            Debug.LogError($"LabelSerializer save failed, Directory does not exist! {directoryPath}");
             return false;
         }
         string serializedString = JsonConvert.SerializeObject(_labels);
         if(string.IsNullOrEmpty(serializedString))
         {
-            Debug.LogError($"LabelSerializer Save failed, string is empty! {path}");
+            Debug.LogError($"LabelSerializer save failed, string is empty! {path}");
             return false;
         }
         File.WriteAllText(path, serializedString);

@@ -32,17 +32,22 @@ public class Manager : MonoBehaviour
     public void OpenProject()
     {
         string projectPath = LabelSerializer.projectPath;
+        if (string.IsNullOrEmpty(projectPath))
+        {
+            projectPath = LabelSerializer.DEFAULT_PROJECT_PATH;
+        }
         string directoryPath = Path.GetDirectoryName(projectPath);
         if(!Directory.Exists(directoryPath))
         {
             directoryPath = LabelSerializer.DEFAULT_PROJECT_PATH;
         }
         string[] path = StandaloneFileBrowser.OpenFilePanel("Open project", directoryPath, new ExtensionFilter[] { projectExtensionFilter }, false);
-        if (path.Length < 1)
+        if (path.Length < 1 || string.IsNullOrEmpty(path[0]))
         {
             Debug.Log("No path selected!");
             return;
-        }        
+        }
+
         LabelSerializer.projectPath = path[0];
         ReloadProject();
     }
