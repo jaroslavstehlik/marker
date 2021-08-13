@@ -8,7 +8,9 @@ using UnityEngine.UI;
 public class ImageMarker : MonoBehaviour
 {
     [SerializeField] private RectTransform _rawImageRectTransform = default;
-    [SerializeField] RawImage _rawImage = default;
+    [SerializeField] private RawImage _rawImage = default;
+    [SerializeField] private Image _scrollViewImage = default;
+    
     private Texture2D _texture2D = default;
     byte[] _whiteTexture;
 
@@ -19,15 +21,17 @@ public class ImageMarker : MonoBehaviour
         _rawImage.texture = _texture2D;
     }
 
-    private void Update()
-    {
-        UpdateSize();
-    }
-
     void OnEnable()
     {
         LabelSerializer.instance.labels.workingImagePathChanged += WorkingImagePathChanged;
         WorkingImagePathChanged(LabelSerializer.instance.labels.workingImagePath);
+        UpdateScrollView();
+    }
+
+    private void Update()
+    {
+        UpdateSize();
+        UpdateScrollView();
     }
 
     private void OnDisable()
@@ -57,5 +61,10 @@ public class ImageMarker : MonoBehaviour
 
         float height = _texture2D.height * LabelSerializer.instance.labels.imagePreviewMagnification;
         _rawImageRectTransform.sizeDelta = new Vector2(height * aspectRatio, height);
+    }
+
+    void UpdateScrollView()
+    {
+        _scrollViewImage.raycastTarget = LabelSerializer.instance.labels.activeMarkerTool == MarkerTool.MOVE_TOOL;
     }
 }
