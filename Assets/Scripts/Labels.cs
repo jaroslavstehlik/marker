@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 public class Labels
 {
     [JsonProperty("rectangleLabels")]
-    Dictionary<string, RectangleLabel> _rectangleLabels;
+    Dictionary<string, List<RectangleLabel>> _rectangleLabels;
     [JsonProperty("directoryPath")]
     string _directoryPath;
     [JsonProperty("labelNames")]
@@ -26,7 +26,7 @@ public class Labels
     public float imagePreviewMagnification = 1f;
     public MarkerTool activeMarkerTool = MarkerTool.MOVE_TOOL;
 
-    public Dictionary<string, RectangleLabel> rectangleLabels { get => _rectangleLabels; }
+    public Dictionary<string, List<RectangleLabel>> rectangleLabels { get => _rectangleLabels; }
     public string directoryPath { get => _directoryPath; set => _directoryPath = value; }
     public List<string> labelNames { get => _labelNames; }
     public List<string> imagePaths { get => _imagePaths; }
@@ -46,7 +46,7 @@ public class Labels
     }
 
     public Labels() {
-        _rectangleLabels = new Dictionary<string, RectangleLabel>();
+        _rectangleLabels = new Dictionary<string, List<RectangleLabel>>();
         _labelNames = new List<string>();
         _imagePaths = new List<string>();
         _imagePathSelection = new List<string>();
@@ -56,10 +56,10 @@ public class Labels
     {
         if(_rectangleLabels.ContainsKey(filename))
         {
-            _rectangleLabels[filename] = mark;
+            _rectangleLabels[filename].Add(mark);
         } else
         {
-            _rectangleLabels.Add(filename, mark);
+            _rectangleLabels.Add(filename, new List<RectangleLabel>(){mark});
         }
     }
 
@@ -73,15 +73,15 @@ public class Labels
         return _rectangleLabels.ContainsKey(filename);
     }
 
-    public bool GetLabel(string filename, out RectangleLabel label)
+    public bool GetLabels(string filename, out List<RectangleLabel> labels)
     {
         if (!_rectangleLabels.ContainsKey(filename))
         {
-            label = new RectangleLabel();
+            labels = null;
             return false;
         }
 
-        label = _rectangleLabels[filename];
+        labels = _rectangleLabels[filename];
         return true;
     }
 

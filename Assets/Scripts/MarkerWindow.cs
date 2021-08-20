@@ -5,11 +5,11 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ImageMarker : MonoBehaviour
+public class MarkerWindow : MonoBehaviour
 {
     [SerializeField] private RectTransform _rawImageRectTransform = default;
     [SerializeField] private RawImage _rawImage = default;
-    [SerializeField] private Image _scrollViewImage = default;
+    [SerializeField] private DraggableScrollRect _draggableScrollRect = default;
     
     private Texture2D _texture2D = default;
     byte[] _whiteTexture;
@@ -53,18 +53,12 @@ public class ImageMarker : MonoBehaviour
 
     void UpdateSize()
     {
-        float aspectRatio = 1f;
-        if (_texture2D.height > 0 && _texture2D.width > 0)
-        {
-            aspectRatio = (float) _texture2D.width / (float) _texture2D.height;
-        }
-
-        float height = _texture2D.height * LabelSerializer.instance.labels.imagePreviewMagnification;
-        _rawImageRectTransform.sizeDelta = new Vector2(height * aspectRatio, height);
+        _rawImageRectTransform.sizeDelta = new Vector2(_texture2D.width, _texture2D.height);
+        _rawImageRectTransform.localScale = Vector3.one * LabelSerializer.instance.labels.imagePreviewMagnification;
     }
 
     void UpdateScrollView()
     {
-        _scrollViewImage.raycastTarget = LabelSerializer.instance.labels.activeMarkerTool == MarkerTool.MOVE_TOOL;
+        _draggableScrollRect.draggable = LabelSerializer.instance.labels.activeMarkerTool == MarkerTool.MOVE_TOOL;
     }
 }
