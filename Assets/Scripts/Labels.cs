@@ -4,52 +4,41 @@ using UnityEngine;
 using System.IO;
 using System;
 using Newtonsoft.Json;
+using Signals;
 
 [JsonObject(MemberSerialization.OptIn)]
 public class Labels
 {
     [JsonProperty("rectangleLabels")]
     Dictionary<string, List<RectangleLabel>> _rectangleLabels;
+    
     [JsonProperty("directoryPath")]
-    string _directoryPath;
-    [JsonProperty("labelNames")]
-    List<string> _labelNames;
-    [JsonProperty("imagePaths")]
-    List<string> _imagePaths;
-    [JsonProperty("imagePathSelection")]
-    List<string> _imagePathSelection;
-    [JsonProperty("workingImagePath")]
-    string _workingImagePath;    
+    public Signal<string> directoryPath { get; } = new Signal<string>();
 
-    public Action<string> workingImagePathChanged;
-    public Action<List<string>> onImagesChanged;
-    public float imagePreviewMagnification = 1f;
-    public MarkerTool activeMarkerTool = MarkerTool.MOVE_TOOL;
+    [JsonProperty("labelNames")] 
+    public SignalList<string> labelNames { get; } = new SignalList<string>();
+    
+    [JsonProperty("imagePaths")]
+    public SignalList<string> imagePaths { get; } = new SignalList<string>();
+    
+    [JsonProperty("imagePathSelection")]
+    public SignalList<string> imagePathSelection { get; } = new SignalList<string>();
+
+    [JsonProperty("workingImagePath")] 
+    public Signal<string> workingImagePath { get; } = new Signal<string>();
+    
+    [JsonProperty("imagePreviewMagnification")] 
+    public Signal<float> imagePreviewMagnification { get; } = new Signal<float>(1f);
+    
+    [JsonProperty("activeMarkerTool")]
+    public Signal<MarkerTool> activeMarkerTool { get; } = new Signal<MarkerTool>(MarkerTool.MOVE_TOOL);
 
     public Dictionary<string, List<RectangleLabel>> rectangleLabels { get => _rectangleLabels; }
-    public string directoryPath { get => _directoryPath; set => _directoryPath = value; }
-    public List<string> labelNames { get => _labelNames; }
-    public List<string> imagePaths { get => _imagePaths; }
-    public List<string> imagePathSelection { get => _imagePathSelection; }
 
-    public string workingImagePath {
-        get {
-            return _workingImagePath;
-        }
-        set {
-            if (_workingImagePath != value)
-            {
-                _workingImagePath = value;
-                workingImagePathChanged?.Invoke(_workingImagePath);
-            }
-        }
-    }
-
+    public Action onLoaded = default;
+    
     public Labels() {
         _rectangleLabels = new Dictionary<string, List<RectangleLabel>>();
-        _labelNames = new List<string>();
-        _imagePaths = new List<string>();
-        _imagePathSelection = new List<string>();
     }
 
     public void AddLabel(string filename, RectangleLabel mark)
@@ -87,88 +76,76 @@ public class Labels
 
     public void AddImage(string filename)
     {
-        if (!_imagePaths.Contains(filename))
+        Debug.Log(("Labels.AddImage"));
+        if (!imagePaths.Contains(filename))
         {
-            _imagePaths.Add(filename);
-            _imagePaths.Sort();
-
-            onImagesChanged?.Invoke(_imagePaths);
+            imagePaths.Add(filename);
+            imagePaths.Sort();
         }
     }
 
     public void AddImages(string[] filenames)
     {
+        Debug.Log(("Labels.AddImages"));
         for (int i = 0; i < filenames.Length; i++)
         {
-            if (!_imagePaths.Contains(filenames[i]))
+            if (!imagePaths.Contains(filenames[i]))
             {
-                _imagePaths.Add(filenames[i]);
+                imagePaths.Add(filenames[i]);
             }
         }
 
-        _imagePaths.Sort();
-        onImagesChanged?.Invoke(_imagePaths);
+        imagePaths.Sort();
     }
 
     public void RemoveImage(string filename)
     {
-        _imagePaths.Remove(filename);        
-        _imagePathSelection.Remove(filename);
-        _imagePaths.Sort();
-
-        onImagesChanged?.Invoke(_imagePaths);
-        if (!_imagePaths.Contains(workingImagePath))
+        Debug.Log(("Labels.RemoveImage"));
+        imagePaths.Remove(filename);        
+        imagePathSelection.Remove(filename);
+        imagePaths.Sort();
+        
+        if (!imagePaths.Contains(workingImagePath.value))
         {
-            workingImagePath = null;
+            workingImagePath.value = null;
         }
     }
 
     public void RemoveImages(string[] filenames)
     {
+        Debug.Log(("Labels.RemoveImages"));
         for (int i = 0; i < filenames.Length; i++)
         {
-            _imagePaths.Remove(filenames[i]);
-            _imagePathSelection.Remove(filenames[i]);
+            imagePaths.Remove(filenames[i]);
+            imagePathSelection.Remove(filenames[i]);
         }
-        _imagePaths.Sort();
-
-        onImagesChanged?.Invoke(_imagePaths);
-        if(!_imagePaths.Contains(workingImagePath))
+        imagePaths.Sort();
+        
+        if(!imagePaths.Contains(workingImagePath.value))
         {
-            workingImagePath = null;
+            workingImagePath.value = null;
         }
     }
 
     public void RemoveSelectedImages()
     {
+        Debug.Log(("Labels.RemoveSelectedImages"));
         RemoveImages(imagePathSelection.ToArray());
         imagePathSelection.Clear();
     }
 
     public bool ContainsImage(string filename)
     {
-        return _imagePaths.Contains(filename);
-    }
-
-    public List<string> GetImages()
-    {
-        return _imagePaths;
-    }
-
-    public void OnLoaded()
-    {
-        workingImagePathChanged?.Invoke(_workingImagePath);
+        return imagePaths.Contains(filename);
     }
 
     public void Clear()
     {
-        _directoryPath = "";
-        _labelNames.Clear();
-        _imagePaths.Clear();
-        _imagePathSelection.Clear();
-        _workingImagePath = "";
-
-        workingImagePathChanged?.Invoke(_workingImagePath);
-        onImagesChanged?.Invoke(_imagePaths);
+        Debug.Log(("Labels.Clear"));
+        directoryPath.value = "";
+        workingImagePath.value = "";
+        labelNames.Clear();
+        imagePaths.Clear();
+        imagePathSelection.Clear();
     }
 }

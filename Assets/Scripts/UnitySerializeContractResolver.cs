@@ -10,9 +10,6 @@ public class UnitySerializeContractResolver : DefaultContractResolver {
     protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization) {
         JsonProperty property = base.CreateProperty(member, memberSerialization);
         switch (member.MemberType) {
-            case MemberTypes.Method:
-                property.Ignored = true;
-                break;
             case MemberTypes.Event:
                 property.Ignored = true;
                 break;

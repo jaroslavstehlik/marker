@@ -18,12 +18,12 @@ public class MarkerManager : MonoBehaviour
     private void OnEnable()
     {
         RebuildLabels();
-        LabelSerializer.instance.labels.workingImagePathChanged += WorkingImagePathChanged;
+        LabelSerializer.instance.labels.workingImagePath.changed += WorkingImagePathChanged;
     }
 
     private void OnDisable()
     {
-        LabelSerializer.instance.labels.workingImagePathChanged -= WorkingImagePathChanged;
+        LabelSerializer.instance.labels.workingImagePath.changed -= WorkingImagePathChanged;
     }
 
     void WorkingImagePathChanged(string workingImagePath)
@@ -40,7 +40,7 @@ public class MarkerManager : MonoBehaviour
 
     public void RebuildLabels()
     {
-        LabelSerializer.instance.labels.rectangleLabels.TryGetValue(LabelSerializer.instance.labels.workingImagePath, 
+        LabelSerializer.instance.labels.rectangleLabels.TryGetValue(LabelSerializer.instance.labels.workingImagePath.value, 
             out List<RectangleLabel> rectangleLabels);
         
         int newSize = rectangleLabels != null ? rectangleLabels.Count : 0;

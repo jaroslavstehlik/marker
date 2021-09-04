@@ -18,7 +18,8 @@ public class MiniMap : MonoBehaviour
 
     private void OnEnable()
     {
-        _slider.value = LabelSerializer.instance.labels.imagePreviewMagnification;
+        LabelSerializer.instance.labels.imagePreviewMagnification.changed += OnImagePreviewMagnificationChanged;
+        OnImagePreviewMagnificationChanged(LabelSerializer.instance.labels.imagePreviewMagnification.value);
         _slider.onValueChanged.AddListener(OnSliderValueChanged);
         UpdateMagnificationText();
     }
@@ -48,18 +49,23 @@ public class MiniMap : MonoBehaviour
 
     private void OnDisable()
     {
+        LabelSerializer.instance.labels.imagePreviewMagnification.changed -= OnImagePreviewMagnificationChanged;
         _slider.onValueChanged.RemoveListener(OnSliderValueChanged);
+    }
+
+    private void OnImagePreviewMagnificationChanged(float value)
+    {
+        _slider.value = value;
+        UpdateMagnificationText();
     }
 
     void OnSliderValueChanged(float value)
     {
-        value = SliderSnao(value);
-        _slider.value = value;
-        LabelSerializer.instance.labels.imagePreviewMagnification = value;
-        UpdateMagnificationText();
+        value = SliderSnap(value);
+        LabelSerializer.instance.labels.imagePreviewMagnification.value = value;
     }
 
-    float SliderSnao(float value)
+    float SliderSnap(float value)
     {
         if (Mathf.Abs(1f - value) < 0.1f) return 1f;
         return value;
@@ -67,7 +73,7 @@ public class MiniMap : MonoBehaviour
     
     void UpdateMagnificationText()
     {
-        float magnification = LabelSerializer.instance.labels.imagePreviewMagnification;
+        float magnification = LabelSerializer.instance.labels.imagePreviewMagnification.value;
         _magnificationText.text = magnification.ToString("P", CultureInfo.InvariantCulture);
     }
 }

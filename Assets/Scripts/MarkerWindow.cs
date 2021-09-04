@@ -23,8 +23,8 @@ public class MarkerWindow : MonoBehaviour
 
     void OnEnable()
     {
-        LabelSerializer.instance.labels.workingImagePathChanged += WorkingImagePathChanged;
-        WorkingImagePathChanged(LabelSerializer.instance.labels.workingImagePath);
+        LabelSerializer.instance.labels.workingImagePath.changed += WorkingImagePathChanged;
+        WorkingImagePathChanged(LabelSerializer.instance.labels.workingImagePath.value);
         UpdateScrollView();
     }
 
@@ -36,7 +36,7 @@ public class MarkerWindow : MonoBehaviour
 
     private void OnDisable()
     {
-        LabelSerializer.instance.labels.workingImagePathChanged -= WorkingImagePathChanged;
+        LabelSerializer.instance.labels.workingImagePath.changed -= WorkingImagePathChanged;
     }
 
     void WorkingImagePathChanged(string imagePath)
@@ -54,11 +54,11 @@ public class MarkerWindow : MonoBehaviour
     void UpdateSize()
     {
         _rawImageRectTransform.sizeDelta = new Vector2(_texture2D.width, _texture2D.height);
-        _rawImageRectTransform.localScale = Vector3.one * LabelSerializer.instance.labels.imagePreviewMagnification;
+        _rawImageRectTransform.localScale = Vector3.one * LabelSerializer.instance.labels.imagePreviewMagnification.value;
     }
 
     void UpdateScrollView()
     {
-        _draggableScrollRect.draggable = LabelSerializer.instance.labels.activeMarkerTool == MarkerTool.MOVE_TOOL;
+        _draggableScrollRect.draggable = LabelSerializer.instance.labels.activeMarkerTool.value == MarkerTool.MOVE_TOOL;
     }
 }

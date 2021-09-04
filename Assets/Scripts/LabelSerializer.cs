@@ -27,7 +27,7 @@ public class LabelSerializer
     /// </summary>
     public static readonly JsonSerializerSettings jsonSettings = new JsonSerializerSettings
     {
-        ObjectCreationHandling = ObjectCreationHandling.Replace,
+        ObjectCreationHandling = ObjectCreationHandling.Reuse,
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         StringEscapeHandling = StringEscapeHandling.Default,
         Formatting = Formatting.None,
@@ -71,7 +71,7 @@ public class LabelSerializer
             _labels = new Labels();
         }
         _labels.Clear();
-        _labels.directoryPath = DEFAULT_PROJECT_PATH;
+        _labels.directoryPath.value = DEFAULT_PROJECT_PATH;
         onDataLoaded?.Invoke(_labels);
     }
 
@@ -100,7 +100,7 @@ public class LabelSerializer
             return false;
         }
         JsonConvert.PopulateObject(serializedString, _labels, jsonSettings);
-        labels.OnLoaded();
+        labels.onLoaded?.Invoke();
         onDataLoaded?.Invoke(_labels);        
         return true;
     }

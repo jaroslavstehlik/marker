@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Signals;
 
 public enum SelectionOperation
 {
@@ -15,16 +17,18 @@ public class ImageList : MonoBehaviour
     [SerializeField] ImageListButton _imageListButton = default;
     [SerializeField] ScrollRect _scrollRect = default;
 
-    Labels labels = default;
-    List<string> imagePaths => labels.imagePaths;
-    List<string> imagePathSelection => labels.imagePathSelection;
+    private SignalList<string> imagePaths => LabelSerializer.instance.labels.imagePaths;
+    private SignalList<string> imagePathSelection => LabelSerializer.instance.labels.imagePathSelection;
+    private Signal<string> workingImagePath => LabelSerializer.instance.labels.workingImagePath;
     
-    List<ImageListButton> buttons = new List<ImageListButton>();
+    private List<ImageListButton> _buttons = new List<ImageListButton>();
     
     void OnEnable()
     {
-        LabelSerializer.instance.onDataLoaded += OnDataLoaded;
-        OnDataLoaded(LabelSerializer.instance.labels);
+        imagePaths.changed += OnImagePathsChanged;
+        imagePathSelection.changed += OnImagePathSelectionChanged;
+        workingImagePath.changed += OnWorkingImagePathChanged;
+        Rebuild();
     }
 
     private void Update()
@@ -41,19 +45,25 @@ public class ImageList : MonoBehaviour
 
     void OnDisable()
     {
-        LabelSerializer.instance.onDataLoaded -= OnDataLoaded;
+        imagePaths.changed -= OnImagePathsChanged;
+        imagePathSelection.changed -= OnImagePathSelectionChanged;
+        workingImagePath.changed -= OnWorkingImagePathChanged;
     }
 
-    void OnDataLoaded(Labels labels)
+    private void OnWorkingImagePathChanged(string obj)
     {
-        if (this.labels != labels)
-        {
-            this.labels = labels;
-            this.labels.onImagesChanged += OnImagesChanged;
-        }
-
-        int imageIndex = FindImageIndex(this.labels.workingImagePath);        
+        int imageIndex = FindImageIndex(workingImagePath.value);
         SelectImage(imageIndex);
+        Rebuild();
+    }
+
+    private void OnImagePathSelectionChanged()
+    {
+        Rebuild();
+    }
+
+    private void OnImagePathsChanged()
+    {
         Rebuild();
     }
 
@@ -82,14 +92,14 @@ public class ImageList : MonoBehaviour
 
     void ResizeList(int newSize)
     {
-        int buttonCount = buttons.Count;
+        int buttonCount = _buttons.Count;
         int removeObjects = buttonCount - newSize;
         int addObjects = newSize - buttonCount;
 
         for (int i = 0; i < removeObjects; i++)
         {
-            GameObject.Destroy(buttons[0].gameObject);
-            buttons.RemoveAt(0);
+            GameObject.Destroy(_buttons[0].gameObject);
+            _buttons.RemoveAt(0);
         }
 
         for (int i = 0; i < addObjects; i++)
@@ -100,7 +110,7 @@ public class ImageList : MonoBehaviour
             go.transform.localScale = Vector3.one;
             ImageListButton imageListButton = go.GetComponent<ImageListButton>();
             imageListButton.onClick += OnImageListButtonClick;
-            buttons.Add(imageListButton);
+            _buttons.Add(imageListButton);
         }
     }
 
@@ -109,10 +119,10 @@ public class ImageList : MonoBehaviour
         if (imagePaths == null) return;
         for(int i = 0; i < imagePaths.Count; i++)
         {
-            ImageListButton imageListButton = buttons[i];
+            ImageListButton imageListButton = _buttons[i];
             imageListButton.text = imagePaths[i];
             imageListButton.selected = imagePathSelection.Contains(imagePaths[i]);
-            imageListButton.indication = imagePaths[i] == labels.workingImagePath;
+            imageListButton.indication = imagePaths[i] == workingImagePath.value;
         }
     }
 
@@ -134,7 +144,7 @@ public class ImageList : MonoBehaviour
     public void PreviousImage()
     {
         if (imagePaths.Count == 0) return;
-        int index = FindImageIndex(labels.workingImagePath);
+        int index = FindImageIndex(workingImagePath.value);
         if (index < 0) index = 0;
         int newIndex = Modulo(index - 1, imagePaths.Count);
         SelectImage(newIndex, GetSelectionOperation());
@@ -144,7 +154,7 @@ public class ImageList : MonoBehaviour
     {
         if (imagePaths.Count == 0) return;
         if (imagePaths.Count == 0) return;
-        int index = FindImageIndex(labels.workingImagePath);
+        int index = FindImageIndex(workingImagePath.value);
         if (index < 0) index = 0;
         int newIndex = Modulo(index + 1, imagePaths.Count);
         SelectImage(newIndex, GetSelectionOperation());
@@ -159,7 +169,7 @@ public class ImageList : MonoBehaviour
                 if (imagePaths != null && index > -1 && index < imagePaths.Count)
                 {
                     imagePathSelection.Add(imagePaths[index]);
-                    labels.workingImagePath = imagePaths[index];
+                    workingImagePath.value = imagePaths[index];
                 }
                 break;
             case SelectionOperation.Add:                
@@ -169,7 +179,7 @@ public class ImageList : MonoBehaviour
                     {
                         imagePathSelection.Add(imagePaths[index]);
                     }
-                    labels.workingImagePath = imagePaths[index];
+                    workingImagePath.value = imagePaths[index];
                 }
                 break;
             case SelectionOperation.Subtract:
@@ -179,7 +189,7 @@ public class ImageList : MonoBehaviour
                     {
                         imagePathSelection.Remove(imagePaths[index]);
                     }
-                    labels.workingImagePath = imagePaths[index];
+                    workingImagePath.value = imagePaths[index];
                 }
                 break;
         }

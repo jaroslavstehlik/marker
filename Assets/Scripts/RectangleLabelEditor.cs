@@ -25,7 +25,7 @@ public class RectangleLabelEditor : MonoBehaviour, IPointerDownHandler, IPointer
 
     void SetState(RectDrawState state)
     {
-        if (LabelSerializer.instance.labels.activeMarkerTool != MarkerTool.RECTANGLE_TOOL)
+        if (LabelSerializer.instance.labels.activeMarkerTool.value != MarkerTool.RECTANGLE_TOOL)
         {
             _rectDrawState = RectDrawState.None;
             return;
@@ -49,7 +49,7 @@ public class RectangleLabelEditor : MonoBehaviour, IPointerDownHandler, IPointer
                 rectangleLabel.maxX = Mathf.Max(_pointerDownPosition.x, _pointerUpPosition.x);
                 rectangleLabel.maxY = Mathf.Max(_pointerDownPosition.y, _pointerUpPosition.y);
                 rectangleLabel.name = "Test";
-                labels.AddLabel(LabelSerializer.instance.labels.workingImagePath, rectangleLabel);
+                labels.AddLabel(LabelSerializer.instance.labels.workingImagePath.value, rectangleLabel);
                 _markManager.RebuildLabels();
                 SetState(RectDrawState.None);
                 break;

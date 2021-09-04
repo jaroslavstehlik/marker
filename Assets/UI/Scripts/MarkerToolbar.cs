@@ -31,23 +31,28 @@ public class MarkerToolbar : MonoBehaviour
 
     private void OnEnable()
     {
+        LabelSerializer.instance.labels.activeMarkerTool.changed += OnActiveMarkerToolChanged;
         UpdateMarkerToolButtons();
     }
 
     private void OnDisable()
     {
-        
+        LabelSerializer.instance.labels.activeMarkerTool.changed -= OnActiveMarkerToolChanged;
+    }
+
+    void OnActiveMarkerToolChanged(MarkerTool markerTool)
+    {
+        UpdateMarkerToolButtons();
     }
 
     void OnMarkerToolButtonClick(MarkerTool markerTool)
     {
-        LabelSerializer.instance.labels.activeMarkerTool = markerTool;
-        UpdateMarkerToolButtons();
+        LabelSerializer.instance.labels.activeMarkerTool.value = markerTool;
     }
 
     void UpdateMarkerToolButtons()
     {
-        MarkerTool markerTool = LabelSerializer.instance.labels.activeMarkerTool;
+        MarkerTool markerTool = LabelSerializer.instance.labels.activeMarkerTool.value;
         for (int i = 0; i < _markerToolButtons.Length; i++)
         {
             _markerToolButtons[i].selected = _markerToolButtons[i].markerTool == markerTool;
