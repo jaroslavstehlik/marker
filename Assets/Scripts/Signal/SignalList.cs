@@ -10,6 +10,7 @@ namespace Signals
     /// <summary><para>Implements the <see cref="T:System.Collections.Generic.IList&lt;T&gt;" /> interface. The size of a List is dynamically increased as required. A List is not guaranteed to be sorted. It is the programmer's responsibility to sort the List prior to performing operations (such as <see langword="BinarySearch" />) that require a List to be sorted. Indexing operations are required to perform in constant access time; that is, O(1).</para></summary>
     /// <typeparam name="T">To be added.</typeparam>
     /// <footer><a href="http://docs.go-mono.com/?link=T:System.Collections.Generic.List%601">`List` on docs.go-mono.com</a></footer>
+    [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
     public class SignalList<T> :
         ICollection<T>,
@@ -24,14 +25,16 @@ namespace Signals
         private List<T> _value = default;
         
         [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
-        private List<T> value
+        public List<T> value
         {
             get => _value;
-            set
+            private set
             {
-                Debug.Log("On Deserialized");
-                _value = value;
-                changed?.Invoke();
+                if (_value != value)
+                {
+                    _value = value;
+                    changed?.Invoke();
+                }
             }
         }
 

@@ -9,9 +9,11 @@ using Signals;
 [JsonObject(MemberSerialization.OptIn)]
 public class Labels
 {
+
     [JsonProperty("rectangleLabels")]
-    Dictionary<string, List<RectangleLabel>> _rectangleLabels;
-    
+    public SignalDictionary<string, List<RectangleLabel>> rectangleLabels { get; } =
+        new SignalDictionary<string, List<RectangleLabel>>();
+
     [JsonProperty("directoryPath")]
     public Signal<string> directoryPath { get; } = new Signal<string>();
 
@@ -33,77 +35,72 @@ public class Labels
     [JsonProperty("activeMarkerTool")]
     public Signal<MarkerTool> activeMarkerTool { get; } = new Signal<MarkerTool>(MarkerTool.MOVE_TOOL);
 
-    public Dictionary<string, List<RectangleLabel>> rectangleLabels { get => _rectangleLabels; }
-
     public Action onLoaded = default;
     
-    public Labels() {
-        _rectangleLabels = new Dictionary<string, List<RectangleLabel>>();
-    }
-
     public void AddLabel(string filename, RectangleLabel mark)
     {
-        if(_rectangleLabels.ContainsKey(filename))
+        if(rectangleLabels.ContainsKey(filename))
         {
-            _rectangleLabels[filename].Add(mark);
+            rectangleLabels[filename].Add(mark);
         } else
         {
-            _rectangleLabels.Add(filename, new List<RectangleLabel>(){mark});
+            rectangleLabels.Add(filename, new List<RectangleLabel>(){mark});
         }
     }
 
     public void RemoveLabel(string filename)
     {
-        _rectangleLabels.Remove(filename);
+        rectangleLabels.Remove(filename);
     }
 
     public bool ContainsLabel(string filename)
     {
-        return _rectangleLabels.ContainsKey(filename);
+        return rectangleLabels.ContainsKey(filename);
     }
 
     public bool GetLabels(string filename, out List<RectangleLabel> labels)
     {
-        if (!_rectangleLabels.ContainsKey(filename))
+        if (!rectangleLabels.ContainsKey(filename))
         {
             labels = null;
             return false;
         }
 
-        labels = _rectangleLabels[filename];
+        labels = rectangleLabels[filename];
         return true;
     }
 
     public void AddImage(string filename)
     {
-        Debug.Log(("Labels.AddImage"));
         if (!imagePaths.Contains(filename))
         {
-            imagePaths.Add(filename);
-            imagePaths.Sort();
+            imagePaths.value.Add(filename);
+            imagePaths.value.Sort();
         }
+        imagePaths.ForceChange();
     }
 
     public void AddImages(string[] filenames)
     {
-        Debug.Log(("Labels.AddImages"));
         for (int i = 0; i < filenames.Length; i++)
         {
             if (!imagePaths.Contains(filenames[i]))
             {
-                imagePaths.Add(filenames[i]);
+                imagePaths.value.Add(filenames[i]);
             }
         }
 
-        imagePaths.Sort();
+        imagePaths.value.Sort();
+        imagePaths.ForceChange();
     }
 
     public void RemoveImage(string filename)
     {
-        Debug.Log(("Labels.RemoveImage"));
-        imagePaths.Remove(filename);        
-        imagePathSelection.Remove(filename);
-        imagePaths.Sort();
+        imagePaths.value.Remove(filename);        
+        imagePathSelection.value.Remove(filename);
+        imagePaths.value.Sort();
+        imagePaths.ForceChange();
+        imagePathSelection.ForceChange();
         
         if (!imagePaths.Contains(workingImagePath.value))
         {
@@ -113,13 +110,14 @@ public class Labels
 
     public void RemoveImages(string[] filenames)
     {
-        Debug.Log(("Labels.RemoveImages"));
         for (int i = 0; i < filenames.Length; i++)
         {
-            imagePaths.Remove(filenames[i]);
-            imagePathSelection.Remove(filenames[i]);
+            imagePaths.value.Remove(filenames[i]);
+            imagePathSelection.value.Remove(filenames[i]);
         }
-        imagePaths.Sort();
+        imagePaths.value.Sort();
+        imagePaths.ForceChange();
+        imagePathSelection.ForceChange();
         
         if(!imagePaths.Contains(workingImagePath.value))
         {
@@ -129,7 +127,6 @@ public class Labels
 
     public void RemoveSelectedImages()
     {
-        Debug.Log(("Labels.RemoveSelectedImages"));
         RemoveImages(imagePathSelection.ToArray());
         imagePathSelection.Clear();
     }
@@ -141,7 +138,6 @@ public class Labels
 
     public void Clear()
     {
-        Debug.Log(("Labels.Clear"));
         directoryPath.value = "";
         workingImagePath.value = "";
         labelNames.Clear();
